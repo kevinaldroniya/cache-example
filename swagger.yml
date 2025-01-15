@@ -1,0 +1,109 @@
+openapi: 3.0.1
+info:
+  title: Redis-Based Data Management API
+  description: A simple API for managing service data in Redis.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+    description: Local development server
+
+paths:
+  /services:
+    post:
+      summary: Save service data
+      description: Saves the provided service data to Redis.
+      operationId: saveData
+      requestBody:
+        description: Service data to be saved
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+            examples:
+              example1:
+                value:
+                  serviceA:
+                    key1: value1
+                    key2: value2
+                  serviceB:
+                    key1: value3
+                    key2:
+                      nestedKey: nestedValue
+      responses:
+        '200':
+          description: Data saved successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "Data saved"
+        '400':
+          description: Invalid input data
+
+    get:
+      summary: Retrieve all service data
+      description: Retrieves all service data stored in Redis.
+      operationId: getAllData
+      responses:
+        '200':
+          description: List of all service data
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+              examples:
+                example1:
+                  value:
+                    serviceA:
+                      key1: value1
+                      key2: value2
+                    serviceB:
+                      key1: value3
+                      key2:
+                        nestedKey: nestedValue
+        '500':
+          description: Internal server error
+
+  /services/{keyPath}:
+    get:
+      summary: Retrieve service data by key path
+      description: Retrieves specific data by a dot-separated key path (e.g., serviceName.subKey).
+      operationId: getDataByPath
+      parameters:
+        - name: keyPath
+          in: path
+          description: The dot-separated path to the data
+          required: true
+          schema:
+            type: string
+            example: serviceB.key2.nestedKey
+      responses:
+        '200':
+          description: Data for the specified key path
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keyPath:
+                    type: object
+                    additionalProperties: true
+              examples:
+                example1:
+                  value:
+                    serviceB.key2.nestedKey: nestedValue
+        '404':
+          description: Data not found for the given path
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Data not found for path: serviceB.key2.nestedKey"
+        '400':
+          description: Invalid key path format
